@@ -41,3 +41,7 @@ Get all things where field1=value1 AND ( field2=value2 OR field3=value3 ) sort b
 
 # Thanks
 Special thanks to my employer https://geneticnetworks.com for letting me work on this and open source it.
+
+# TODO
+* Allow filter types where the internal field name supports aliasing and possibly interfaces
+* Rewrite parser to something a little more intelligent
