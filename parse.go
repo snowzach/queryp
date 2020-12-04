@@ -3,6 +3,7 @@ package queryp
 import (
 	"errors"
 	"fmt"
+	"log"
 	"net/url"
 	"regexp"
 	"strconv"
@@ -11,7 +12,7 @@ import (
 
 // Handles parsing query requests with complex matching and precedence
 var (
-	stringQueryParser = regexp.MustCompile("(&|^|\\|)(\\(*)([a-zA-Z_.]+)(!=~~|=~~|!=~|=~|!:~|!:|:~|:|<=|=<|>=|=>|!=|<|>|=)([^&|\\)|$]+)(\\)*)")
+	optionParser = regexp.MustCompile("^option\\[(.*)\\]$")
 
 	ErrCouldNotParse = errors.New("could not parse")
 )
@@ -37,87 +38,211 @@ func ParseQuery(q string) (*QueryParameters, error) {
 		return qp, nil
 	}
 
-	matches := stringQueryParser.FindAllStringSubmatch(q, -1)
-	if len(matches) == 0 {
-		return nil, ErrCouldNotParse
-	}
-
-	// for i, match := range matches {
-	// 	fmt.Printf("%d: %v\n", i, match)
-	// }
-
-	// Recursive parse function
-	var parsedChars int
 	var pos int
-	var found bool
 	var err error
+
 	var parse func(depth int) (Filter, error)
 	parse = func(depth int) (Filter, error) {
+
 		start := true
-
 		filter := make([]FilterTerm, 0)
-		for pos < len(matches) {
 
-			m := matches[pos]
-			// m[0] = matches string
-			// m[1] = logic
-			// m[2] = open parens
-			// m[3] = field
-			// m[4] = op
-			// m[5] = value
-			// m[6] = close parens
+		for {
 
+			// Parse the filter logic
 			var logic FilterLogic // Default is START if omitted
 			if start {
 				logic = FilterLogicStart
 				start = false
 			} else {
-				logic, found = FilterLogicSymToFilterLogic[m[1]]
-				if !found {
-					return nil, fmt.Errorf("invalid filter logic: %s", m[1])
+				switch q[pos] {
+				case '&':
+					logic = FilterLogicAnd
+				case '|':
+					logic = FilterLogicOr
+				default:
+					return nil, fmt.Errorf("invalid filter logic at pos %d", pos)
 				}
+				pos++
 			}
 
-			op, found := FilterOpSymToFilterOp[m[4]]
-			if !found {
-				return nil, fmt.Errorf("invalid filter logic: %s", m[4])
+			if pos == len(q) {
+				return nil, fmt.Errorf("unexpected end of input at pos %d", pos)
 			}
 
-			// If we have a paren we haven't traversed down into
-			if len(m[2]) > depth {
-				subFilter, err := parse(depth + 1 + len(m[2]) - len(m[6]))
+			// Is there a sub-filter?
+			if q[pos] == '(' {
+				log.Println("SUB")
+				// Eat paren
+				pos++
+				if pos == len(q) {
+					return nil, fmt.Errorf("unexpected end of input at pos %d", pos)
+				}
+				// Parse the sub-filter
+				subFilter, err := parse(depth + 1)
 				if err != nil {
 					return nil, err
 				}
+				if pos == len(q) {
+					return nil, fmt.Errorf("unexpected end of input at pos %d", pos)
+				}
+				// Ensure paren closed
+				if q[pos] != ')' {
+					return nil, fmt.Errorf("missing close parenthesis at pos: %d", pos)
+				}
+				pos++
+				// Append sub-filter
 				filter = append(filter, FilterTerm{
 					Logic:     logic,
 					SubFilter: subFilter, // Parse, handle redundant parens
 				})
+				if pos == len(q) { // nothing else left to parse
+					return filter, nil
+				}
 
 			} else {
 
-				parsedChars += len(m[0])
+				// Field identifier
+				var fieldb strings.Builder
+				if pos == len(q) {
+					return nil, fmt.Errorf("unexpected end of input at pos %d", pos)
+				}
+				if q[pos] == '"' {
+				fieldLoopQuote:
+					for {
+						if pos == len(q) {
+							return nil, fmt.Errorf("unexpected end of input at pos %d", pos)
+						}
+						switch q[pos] {
+						case '"':
+							pos++
+							break fieldLoopQuote
+						case '\\': // Escape whatever
+							pos++
+							if pos == len(q) {
+								return nil, fmt.Errorf("unexpected end of input at pos %d", pos)
+							}
+							fieldb.WriteByte(q[pos])
+						default:
+							fieldb.WriteByte(q[pos])
+						}
+						pos++
+					}
+				} else {
+				fieldLoop:
+					for {
+						if pos == len(q) {
+							return nil, fmt.Errorf("unexpected end of input at pos %d", pos)
+						}
+						switch q[pos] {
+						case '!', '=', '~', ':', '<', '>':
+							break fieldLoop
+						default:
+							fieldb.WriteByte(q[pos])
+						}
+						pos++
+					}
 
-				field, value := m[3], m[5]
+				}
+				if fieldb.Len() == 0 {
+					return nil, fmt.Errorf("invalid field name at pos %d", pos)
+				}
+				field := fieldb.String()
+
+				// Operator
+				var opb strings.Builder
+			opLoop:
+				for {
+					if pos == len(q) {
+						return nil, fmt.Errorf("unexpected end of input at pos %d", pos)
+					}
+					switch q[pos] {
+					case '!', '=', '~', ':', '<', '>':
+						opb.WriteByte(q[pos])
+					default:
+						break opLoop
+					}
+					pos++
+				}
+
+				op, found := FilterOpSymToFilterOp[opb.String()]
+				if !found {
+					return nil, fmt.Errorf("invalid filter operation: %s at pos %d", opb.String(), pos)
+				}
+
+				// value identifier
+				var valueb strings.Builder
+				if pos == len(q) {
+					return nil, fmt.Errorf("unexpected end of input at pos %d", pos)
+				}
+				if q[pos] == '"' {
+				valueLoopQuote:
+					for {
+						if pos == len(q) {
+							return nil, fmt.Errorf("unexpected end of input at pos %d", pos)
+						}
+						switch q[pos] {
+						case '"':
+							pos++
+							break valueLoopQuote
+						case '\\': // Escape whatever
+							pos++
+							if pos == len(q) {
+								return nil, fmt.Errorf("unexpected end of input at pos %d", pos)
+							}
+							valueb.WriteByte(q[pos])
+						default:
+							valueb.WriteByte(q[pos])
+						}
+						pos++
+					}
+				} else {
+				valueLoop:
+					for {
+						if pos == len(q) {
+							// End of input
+							break valueLoop
+						}
+						switch q[pos] {
+						case '&', '|', ')':
+							break valueLoop
+						default:
+							valueb.WriteByte(q[pos])
+						}
+						pos++
+					}
+
+				}
+				if valueb.Len() == 0 {
+					return nil, fmt.Errorf("invalid value at pos %d", pos)
+				}
+				value := valueb.String()
 
 				// We will only handle options at depth 0
 				if depth == 0 {
 					switch field {
 					case "limit":
+						if op != FilterOpEquals {
+							return nil, fmt.Errorf("invalid operation for limit option")
+						}
 						qp.Limit, err = strconv.Atoi(value)
 						if err != nil {
 							return nil, fmt.Errorf("invalid value %s for limit", value)
 						}
-						pos++
-						continue
+						field = "" // mark field parsed
 					case "offset":
+						if op != FilterOpEquals {
+							return nil, fmt.Errorf("invalid operation for offset option")
+						}
 						qp.Offset, err = strconv.Atoi(value)
 						if err != nil {
 							return nil, fmt.Errorf("invalid value %s for offset", value)
 						}
-						pos++
-						continue
+						field = "" // mark field parsed
 					case "sort":
+						if op != FilterOpEquals {
+							return nil, fmt.Errorf("invalid operation for sort option")
+						}
 						for _, sortField := range strings.Split(value, ",") {
 							if len(sortField) > 1 && sortField[0] == '-' { // Reverse sort
 								qp.Sort = append(qp.Sort, SortTerm{Field: sortField[1:], Desc: true})
@@ -125,30 +250,37 @@ func ParseQuery(q string) (*QueryParameters, error) {
 								qp.Sort = append(qp.Sort, SortTerm{Field: sortField})
 							}
 						}
-						pos++
-						continue
+						field = "" // mark field parsed
 					case "option":
-						for _, optionField := range strings.Split(value, ",") {
-							qp.Options[optionField] = "true" // Only support true for now
+						if op != FilterOpEquals {
+							return nil, fmt.Errorf("invalid operation for option")
 						}
-						pos++
-						continue
+						// Is it option[key]=value format?
+						if m := optionParser.FindStringSubmatch(field); len(m) > 0 {
+							qp.Options[m[1]] = value
+						} else {
+							for _, optionField := range strings.Split(value, ",") {
+								qp.Options[optionField] = "true" // Default value when not explicitly set
+							}
+						}
+						field = "" // mark field parsed
 					}
 				}
 
 				// Otherwise add a filter option
-				filter = append(filter, FilterTerm{
-					Logic: logic,
-					Op:    op,
-					Field: Field(field),
-					Value: value,
-				})
+				if len(field) > 0 { // field will be empty if it was parsed as an option
+					filter = append(filter, FilterTerm{
+						Logic: logic,
+						Op:    op,
+						Field: Field(field),
+						Value: value,
+					})
+				}
+			}
 
+			if pos == len(q) || (q[pos] == ')' && depth > 0) {
+				break
 			}
-			if len(m[6]) > 0 { // Close Paren
-				return filter, nil
-			}
-			pos++
 		}
 
 		return filter, nil
@@ -158,11 +290,6 @@ func ParseQuery(q string) (*QueryParameters, error) {
 	qp.Filter, err = parse(0)
 	if err != nil {
 		return nil, err
-	}
-
-	// If the entire string was not parsed, return error
-	if parsedChars != len(q) {
-		return nil, ErrCouldNotParse
 	}
 
 	return qp, nil

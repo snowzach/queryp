@@ -44,4 +44,4 @@ Special thanks to my employer https://geneticnetworks.com for letting me work on
 
 # TODO
 * Allow filter types where the internal field name supports aliasing and possibly interfaces
-* Rewrite parser to something a little more intelligent
+
