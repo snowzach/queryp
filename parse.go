@@ -3,7 +3,6 @@ package queryp
 import (
 	"errors"
 	"fmt"
-	"log"
 	"net/url"
 	"regexp"
 	"strconv"
@@ -55,12 +54,9 @@ func ParseQuery(q string) (*QueryParameters, error) {
 				logic = FilterLogicStart
 				start = false
 			} else {
-				switch q[pos] {
-				case '&':
-					logic = FilterLogicAnd
-				case '|':
-					logic = FilterLogicOr
-				default:
+				var found bool
+				logic, found = FilterLogicSymToFilterLogic[string(q[pos])]
+				if !found {
 					return nil, fmt.Errorf("invalid filter logic at pos %d", pos)
 				}
 				pos++
@@ -72,7 +68,6 @@ func ParseQuery(q string) (*QueryParameters, error) {
 
 			// Is there a sub-filter?
 			if q[pos] == '(' {
-				log.Println("SUB")
 				// Eat paren
 				pos++
 				if pos == len(q) {

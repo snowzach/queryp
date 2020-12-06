@@ -3,7 +3,6 @@ package queryp
 import (
 	"bytes"
 	"encoding/json"
-	"strings"
 )
 
 type QueryParameters struct {
@@ -25,18 +24,7 @@ type FilterTerm struct {
 	SubFilter Filter `json:"sub_filter,omitempty"`
 }
 
-const (
-	FilterTypeNotFound FilterType = iota
-	FilterTypeSimple
-	FilterTypeString
-	FilterTypeNumeric
-	FilterTypeTime
-	FilterTypeBool
-)
-
 type Field = string // Alias
-type FilterType int
-type FilterFieldTypes map[Field]FilterType
 
 type SortFields []string
 
@@ -52,23 +40,6 @@ type Options map[string]string // Just a lookup of string
 func (o Options) HasOption(option string) bool {
 	_, found := o[option]
 	return found
-}
-
-func (fft FilterFieldTypes) FindFilterType(search string) (Field, FilterType) {
-
-	if filterType, found := fft[search]; found {
-		return search, filterType
-	}
-
-	// Search for the suffix in the list of filters
-	search = "." + search
-	for filter, filterType := range fft {
-		if strings.HasSuffix(filter, search) {
-			return filter, filterType
-		}
-	}
-	return "", FilterTypeNotFound
-
 }
 
 func (o Options) MarshalJSON() ([]byte, error) {
