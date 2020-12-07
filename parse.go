@@ -250,6 +250,9 @@ func ParseQuery(q string) (*QueryParameters, error) {
 						if op != FilterOpEquals {
 							return nil, fmt.Errorf("invalid operation for option")
 						}
+						if qp.Options == nil {
+							qp.Options = make(Options)
+						}
 						// Is it option[key]=value format?
 						if m := optionParser.FindStringSubmatch(field); len(m) > 0 {
 							qp.Options[m[1]] = value

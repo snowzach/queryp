@@ -42,12 +42,12 @@ func (o Options) HasOption(option string) bool {
 	return found
 }
 
-func (o Options) MarshalJSON() ([]byte, error) {
-	ret := make([]string, 0, len(o))
-	for key := range o {
-		ret = append(ret, key)
+func (o Options) Set(option string, value string) Options {
+	if o == nil {
+		o = make(Options)
 	}
-	return json.Marshal(ret)
+	o[option] = value
+	return o
 }
 
 func (qp *QueryParameters) String() string {
@@ -73,10 +73,10 @@ func (qp *QueryParameters) PrettyString() string {
 
 }
 
-func NewQueryParameters() *QueryParameters {
-	return &QueryParameters{
-		Filter:  make(Filter, 0),
-		Sort:    make(Sort, 0),
-		Options: make(Options),
-	}
+func (qp *QueryParameters) Reset() {
+	qp.Filter = nil
+	qp.Sort = nil
+	qp.Options = nil
+	qp.Limit = 0
+	qp.Offset = 0
 }
