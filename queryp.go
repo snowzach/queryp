@@ -72,3 +72,11 @@ func (qp *QueryParameters) PrettyString() string {
 	return b.String()
 
 }
+
+func NewQueryParameters() *QueryParameters {
+	return &QueryParameters{
+		Filter:  make(Filter, 0),
+		Sort:    make(Sort, 0),
+		Options: make(Options),
+	}
+}
