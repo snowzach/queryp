@@ -11,15 +11,15 @@ import (
 // FilterQuery will update the queryClause and queryParams with filter values
 func FilterQuery(fft queryp.FilterFieldTypes, filter queryp.Filter, queryClause *strings.Builder, queryParams *[]interface{}) error {
 
-	for _, ft := range filter {
+	for i, ft := range filter {
 
-		switch ft.Logic {
-		case queryp.FilterLogicStart:
-			// Nothing Needed
-		case queryp.FilterLogicAnd:
-			queryClause.WriteString(" AND ")
-		case queryp.FilterLogicOr:
-			queryClause.WriteString(" OR ")
+		if i > 0 {
+			switch ft.Logic {
+			case queryp.FilterLogicAnd:
+				queryClause.WriteString(" AND ")
+			case queryp.FilterLogicOr:
+				queryClause.WriteString(" OR ")
+			}
 		}
 
 		if ft.SubFilter != nil {

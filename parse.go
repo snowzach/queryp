@@ -51,7 +51,7 @@ func ParseQuery(q string) (*QueryParameters, error) {
 			// Parse the filter logic
 			var logic FilterLogic // Default is START if omitted
 			if start {
-				logic = FilterLogicStart
+				logic = FilterLogicAnd
 				start = false
 			} else {
 				var found bool

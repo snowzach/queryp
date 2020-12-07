@@ -5,8 +5,7 @@ import "fmt"
 type FilterLogic int
 
 const (
-	FilterLogicStart FilterLogic = iota
-	FilterLogicAnd
+	FilterLogicAnd FilterLogic = iota
 	FilterLogicOr
 
 	FilterLogicSymAnd = "&"
@@ -26,8 +25,6 @@ func (logic FilterLogic) MarshalJSON() ([]byte, error) {
 
 func (logic FilterLogic) String() string {
 	switch logic {
-	case FilterLogicStart:
-		return "START"
 	case FilterLogicAnd:
 		return "AND"
 	case FilterLogicOr:
