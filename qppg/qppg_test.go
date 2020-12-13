@@ -12,9 +12,9 @@ func TestQueryParser(t *testing.T) {
 
 	q, err := queryp.ParseQuery("field=value&((another=<value|yet=another1|limit=weee))|third=value&limit=10&option=beans&sort=test,-another")
 	assert.Nil(t, err)
-	assert.Equal(t, 10, q.Limit)
-	assert.Equal(t, 0, q.Offset)
-	assert.Equal(t, queryp.Sort{queryp.SortTerm{Field: "test", Desc: false}, queryp.SortTerm{Field: "another", Desc: true}}, q.Sort)
+	assert.Equal(t, int64(10), q.Limit)
+	assert.Equal(t, int64(0), q.Offset)
+	assert.Equal(t, []queryp.SortTerm{{Field: "test", Desc: false}, {Field: "another", Desc: true}}, q.Sort)
 
 	var queryClause strings.Builder
 	var queryParams = []interface{}{}

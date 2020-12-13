@@ -2,12 +2,7 @@ package queryp
 
 import "fmt"
 
-type FilterLogic int
-
 const (
-	FilterLogicAnd FilterLogic = iota
-	FilterLogicOr
-
 	FilterLogicSymAnd = "&"
 	FilterLogicSymOr  = "|"
 )

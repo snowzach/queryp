@@ -5,35 +5,10 @@ import (
 	"encoding/json"
 )
 
-type QueryParameters struct {
-	Filter  Filter  `json:"filter"`
-	Sort    Sort    `json:"sort"`
-	Options Options `json:"options"`
-	Limit   int     `json:"limit"`
-	Offset  int     `json:"offset"`
-}
-
 type Filter []FilterTerm
-
-type FilterTerm struct {
-	Logic FilterLogic `json:"logic"`
-	Op    FilterOp    `json:"op"`
-	Field Field       `json:"field"`
-	Value string      `json:"value"`
-
-	SubFilter Filter `json:"sub_filter,omitempty"`
-}
-
 type Field = string // Alias
-
 type SortFields []string
-
 type Sort []SortTerm
-
-type SortTerm struct {
-	Field Field `json:"field"`
-	Desc  bool  `json:"desc"`
-}
 
 type Options map[string]string // Just a lookup of string
 
@@ -71,12 +46,4 @@ func (qp *QueryParameters) PrettyString() string {
 	}
 	return b.String()
 
-}
-
-func (qp *QueryParameters) Reset() {
-	qp.Filter = nil
-	qp.Sort = nil
-	qp.Options = nil
-	qp.Limit = 0
-	qp.Offset = 0
 }

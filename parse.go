@@ -220,7 +220,7 @@ func ParseQuery(q string) (*QueryParameters, error) {
 						if op != FilterOpEquals {
 							return nil, fmt.Errorf("invalid operation for limit option")
 						}
-						qp.Limit, err = strconv.Atoi(value)
+						qp.Limit, err = strconv.ParseInt(value, 10, 64)
 						if err != nil {
 							return nil, fmt.Errorf("invalid value %s for limit", value)
 						}
@@ -229,7 +229,7 @@ func ParseQuery(q string) (*QueryParameters, error) {
 						if op != FilterOpEquals {
 							return nil, fmt.Errorf("invalid operation for offset option")
 						}
-						qp.Offset, err = strconv.Atoi(value)
+						qp.Offset, err = strconv.ParseInt(value, 10, 64)
 						if err != nil {
 							return nil, fmt.Errorf("invalid value %s for offset", value)
 						}

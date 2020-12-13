@@ -6,17 +6,6 @@ import (
 	"strings"
 )
 
-const (
-	FilterTypeNotFound FilterType = iota
-	FilterTypeSimple
-	FilterTypeString
-	FilterTypeNumeric
-	FilterTypeTime
-	FilterTypeBool
-)
-
-type FilterType int
-
 type FilterField interface {
 	Name() string
 	Type() FilterType
