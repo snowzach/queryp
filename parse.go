@@ -1,7 +1,6 @@
 package queryp
 
 import (
-	"errors"
 	"fmt"
 	"net/url"
 	"regexp"
@@ -12,8 +11,6 @@ import (
 // Handles parsing query requests with complex matching and precedence
 var (
 	optionParser = regexp.MustCompile("^option\\[(.*)\\]$")
-
-	ErrCouldNotParse = errors.New("could not parse")
 )
 
 func ParseRawQuery(rq string) (*QueryParameters, error) {

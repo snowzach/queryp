@@ -7,8 +7,6 @@ import (
 
 type Filter []FilterTerm
 type Field = string // Alias
-type SortFields []string
-type Sort []SortTerm
 
 type Options map[string]string // Just a lookup of string
 

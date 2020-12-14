@@ -135,9 +135,9 @@ func SortQuery(sortFields queryp.SortFields, sort queryp.Sort, queryClause *stri
 	for _, sortTerm := range sort {
 		// Search for exact match
 		var found bool
-		var sortField string
+		var sortField queryp.SortField
 		for _, sortField = range sortFields {
-			if sortTerm.Field == sortField {
+			if sortTerm.Field == sortField.GetSortName() {
 				found = true
 				break
 			}
@@ -146,7 +146,7 @@ func SortQuery(sortFields queryp.SortFields, sort queryp.Sort, queryClause *stri
 		if !found {
 			sortTermFieldSuffix := "." + sortTerm.Field
 			for _, sortField = range sortFields {
-				if strings.HasSuffix(sortField, sortTermFieldSuffix) {
+				if strings.HasSuffix(sortField.GetSortName(), sortTermFieldSuffix) {
 					found = true
 					break
 				}
@@ -160,7 +160,7 @@ func SortQuery(sortFields queryp.SortFields, sort queryp.Sort, queryClause *stri
 			} else {
 				queryClause.WriteString(", ")
 			}
-			queryClause.WriteString(sortField)
+			queryClause.WriteString(sortField.GetFieldName())
 			if sortTerm.Desc {
 				queryClause.WriteString(" DESC")
 			}

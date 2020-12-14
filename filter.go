@@ -7,8 +7,8 @@ import (
 )
 
 type FilterField interface {
-	Name() string
-	Type() FilterType
+	GetFieldName() string
+	GetFilterType() FilterType
 }
 
 type FilterFieldTypes map[Field]FilterField
@@ -16,31 +16,31 @@ type FilterFieldTypes map[Field]FilterField
 func (fft FilterFieldTypes) FindFilterType(search string) (string, FilterType) {
 
 	if filterField, found := fft[search]; found {
-		if name := filterField.Name(); name != "" {
-			return name, filterField.Type()
+		if name := filterField.GetFieldName(); name != "" {
+			return name, filterField.GetFilterType()
 		}
-		return search, filterField.Type()
+		return search, filterField.GetFilterType()
 	}
 
 	// Search for the suffix in the list of filters
 	search = "." + search
 	for filter, filterField := range fft {
 		if strings.HasSuffix(filter, search) {
-			if name := filterField.Name(); name != "" {
-				return name, filterField.Type()
+			if name := filterField.GetFieldName(); name != "" {
+				return name, filterField.GetFilterType()
 			}
-			return filter, filterField.Type()
+			return filter, filterField.GetFilterType()
 		}
 	}
 	return "", FilterTypeNotFound
 
 }
 
-func (ft FilterType) Name() string {
+func (ft FilterType) GetFieldName() Field {
 	return ""
 }
 
-func (ft FilterType) Type() FilterType {
+func (ft FilterType) GetFilterType() FilterType {
 	return ft
 }
 
@@ -49,11 +49,11 @@ type FilterFieldCustom struct {
 	FilterType FilterType
 }
 
-func (ffc FilterFieldCustom) Name() string {
+func (ffc FilterFieldCustom) GetFieldName() Field {
 	return ffc.FieldName
 }
 
-func (ffc FilterFieldCustom) Type() FilterType {
+func (ffc FilterFieldCustom) GetFilterType() FilterType {
 	return ffc.FilterType
 }
 
