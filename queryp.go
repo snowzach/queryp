@@ -5,33 +5,32 @@ import (
 	"encoding/json"
 )
 
-type Filter []FilterTerm
+type Filter []*FilterTerm
 type Field = string // Alias
 
 type Options map[string]string // Just a lookup of string
 
-func (o Options) HasOption(option string) bool {
-	_, found := o[option]
+func (qp *QueryParameters) HasOption(option string) bool {
+	_, found := qp.Options[option]
 	return found
 }
 
-func (o Options) Set(option string, value string) Options {
-	if o == nil {
-		o = make(Options)
+func (qp *QueryParameters) SetOption(option string, value string) {
+	if qp.Options == nil {
+		qp.Options = make(map[string]string)
 	}
-	o[option] = value
-	return o
+	qp.Options[option] = value
 }
 
-func (qp *QueryParameters) String() string {
-	b := &bytes.Buffer{}
-	e := json.NewEncoder(b)
-	e.SetEscapeHTML(false)
-	if err := e.Encode(qp); err != nil {
-		panic(err)
-	}
-	return b.String()
-}
+// func (qp *QueryParameters) String() string {
+// 	b := &bytes.Buffer{}
+// 	e := json.NewEncoder(b)
+// 	e.SetEscapeHTML(false)
+// 	if err := e.Encode(qp); err != nil {
+// 		panic(err)
+// 	}
+// 	return b.String()
+// }
 
 func (qp *QueryParameters) PrettyString() string {
 

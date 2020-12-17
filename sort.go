@@ -2,7 +2,7 @@ package queryp
 
 import "strings"
 
-type Sort []SortTerm
+type Sort []*SortTerm
 
 type SortFields []SortField
 

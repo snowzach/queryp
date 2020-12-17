@@ -1,69 +1,66 @@
 syntax="proto3";
 package queryp;
 
-import "gogoproto/gogo.proto";
-
 option go_package = "github.com/snowzach/queryp";
 
 message QueryParameters {
-	option (gogoproto.stringer) = false;
-    repeated FilterTerm filter = 1 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "filter"];
-    repeated SortTerm sort = 2 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "sort"];
-    map<string, string> options = 3 [(gogoproto.casttype) = "Options", (gogoproto.jsontag) = "options"];
-    int64 limit = 4 [(gogoproto.jsontag) = "limit"];
-    int64 offset = 5 [(gogoproto.jsontag) = "offset"];
+    repeated FilterTerm filter = 1;
+    repeated SortTerm sort = 2;
+    map<string, string> options = 3;
+    int64 limit = 4;
+    int64 offset = 5;
 }
 
 message SortTerm {
-    string field = 1 [(gogoproto.casttype) = "Field", (gogoproto.jsontag) = "field"];
-    bool desc = 2 [(gogoproto.jsontag) = "desc"];
+    string field = 1;
+    bool desc = 2;
 }
 
 enum FilterLogic {
-	option (gogoproto.goproto_enum_prefix) = false;
-	option (gogoproto.enum_stringer) = false;
-    FilterLogicAnd = 0;
-    FilterLogicOr = 1;
+    FLNone = 0;
+
+    And = 1;
+    Or = 2;
 }
 
 enum FilterOp {
-	option (gogoproto.goproto_enum_prefix) = false;
-	option (gogoproto.enum_stringer) = false;
-    FilterOpEquals = 0;
-    FilterOpNotEquals = 1;
+    FONone = 0;
 
-	FilterOpLessThan = 2;
-	FilterOpLessThanEqual = 3;
-	FilterOpGreaterThan = 4;
-	FilterOpGreaterThanEqual = 5;
+    Equals = 1;
+    NotEquals = 2;
 
-	FilterOpLike = 6;
-	FilterOpNotLike = 7;
-	FilterOpILike = 8;
-	FilterOpNotILike = 9;
+	LessThan = 3;
+	LessThanEqual = 4;
+	GreaterThan = 5;
+	GreaterThanEqual = 6;
 
-	FilterOpRegexp = 10;
-	FilterOpNotRegexp = 11;
-	FilterOpIRegexp = 12;
-    FilterOpNotIRegexp = 13;
+	Like = 7;
+	NotLike = 8;
+	ILike = 9;
+	NotILike = 10;
+
+	Regexp = 11;
+	NotRegexp = 12;
+	IRegexp = 13;
+    NotIRegexp = 14;
 }
 
 enum FilterType {
-	option (gogoproto.goproto_enum_prefix) = false;
-	option (gogoproto.enum_stringer) = false;
-    FilterTypeNotFound = 0;
-	FilterTypeSimple = 1;
-    FilterTypeString = 2;
-    FilterTypeNumeric = 3;
-	FilterTypeTime = 4;
-	FilterTypeBool = 5;
+    FTNone = 0;
+    
+    NotFound = 1;
+	Simple = 2;
+    String = 3;
+    Numeric = 4;
+	Time = 5;
+	Bool = 6;
 }
 
 message FilterTerm {
-    FilterLogic logic = 1 [(gogoproto.jsontag) = "logic"];
-    FilterOp op = 2 [(gogoproto.jsontag) = "op"];
-    string field = 3 [(gogoproto.casttype) = "Field", (gogoproto.jsontag) = "field"];
-    string value = 4 [(gogoproto.jsontag) = "value"];
+    FilterLogic logic = 1;
+    FilterOp op = 2;
+    string field = 3;
+    string value = 4;
 
-    repeated FilterTerm sub_filter = 10 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "sub_filter,omitempty"];
+    repeated FilterTerm sub_filter = 10;
 }

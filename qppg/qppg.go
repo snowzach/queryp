@@ -15,9 +15,9 @@ func FilterQuery(fft queryp.FilterFieldTypes, filter queryp.Filter, queryClause 
 
 		if i > 0 {
 			switch ft.Logic {
-			case queryp.FilterLogicAnd:
+			case queryp.FilterLogic_And:
 				queryClause.WriteString(" AND ")
-			case queryp.FilterLogicOr:
+			case queryp.FilterLogic_Or:
 				queryClause.WriteString(" OR ")
 			}
 		}
@@ -32,27 +32,27 @@ func FilterQuery(fft queryp.FilterFieldTypes, filter queryp.Filter, queryClause 
 
 			// Lookup the filter
 			field, filterType := fft.FindFilterType(ft.Field)
-			if filterType == queryp.FilterTypeNotFound {
+			if filterType == queryp.FilterType_NotFound {
 				return fmt.Errorf("could not find field: %s", ft.Field)
 			}
 			queryClause.WriteString(field)
 
 			switch filterType {
 
-			case queryp.FilterTypeSimple, queryp.FilterTypeNumeric, queryp.FilterTypeTime:
+			case queryp.FilterType_Simple, queryp.FilterType_Numeric, queryp.FilterType_Time:
 
 				switch ft.Op {
-				case queryp.FilterOpEquals:
+				case queryp.FilterOp_Equals:
 					queryClause.WriteString(" = ")
-				case queryp.FilterOpNotEquals:
+				case queryp.FilterOp_NotEquals:
 					queryClause.WriteString(" != ")
-				case queryp.FilterOpLessThan:
+				case queryp.FilterOp_LessThan:
 					queryClause.WriteString(" < ")
-				case queryp.FilterOpLessThanEqual:
+				case queryp.FilterOp_LessThanEqual:
 					queryClause.WriteString(" <= ")
-				case queryp.FilterOpGreaterThan:
+				case queryp.FilterOp_GreaterThan:
 					queryClause.WriteString(" > ")
-				case queryp.FilterOpGreaterThanEqual:
+				case queryp.FilterOp_GreaterThanEqual:
 					queryClause.WriteString(" >= ")
 				default:
 					return fmt.Errorf("invalid op %s for field %s", ft.Op.String(), field)
@@ -61,35 +61,35 @@ func FilterQuery(fft queryp.FilterFieldTypes, filter queryp.Filter, queryClause 
 				*queryParams = append(*queryParams, ft.Value)
 				queryClause.WriteString("$" + strconv.Itoa(len(*queryParams)))
 
-			case queryp.FilterTypeString:
+			case queryp.FilterType_String:
 				switch ft.Op {
-				case queryp.FilterOpEquals:
+				case queryp.FilterOp_Equals:
 					queryClause.WriteString(" = ")
-				case queryp.FilterOpNotEquals:
+				case queryp.FilterOp_NotEquals:
 					queryClause.WriteString(" != ")
-				case queryp.FilterOpLessThan:
+				case queryp.FilterOp_LessThan:
 					queryClause.WriteString(" < ")
-				case queryp.FilterOpLessThanEqual:
+				case queryp.FilterOp_LessThanEqual:
 					queryClause.WriteString(" <= ")
-				case queryp.FilterOpGreaterThan:
+				case queryp.FilterOp_GreaterThan:
 					queryClause.WriteString(" > ")
-				case queryp.FilterOpGreaterThanEqual:
+				case queryp.FilterOp_GreaterThanEqual:
 					queryClause.WriteString(" >= ")
-				case queryp.FilterOpLike:
+				case queryp.FilterOp_Like:
 					queryClause.WriteString(" LIKE ")
-				case queryp.FilterOpNotLike:
+				case queryp.FilterOp_NotLike:
 					queryClause.WriteString(" NOT LIKE ")
-				case queryp.FilterOpILike:
+				case queryp.FilterOp_ILike:
 					queryClause.WriteString(" ILIKE ")
-				case queryp.FilterOpNotILike:
+				case queryp.FilterOp_NotILike:
 					queryClause.WriteString(" NOT ILIKE ")
-				case queryp.FilterOpRegexp:
+				case queryp.FilterOp_Regexp:
 					queryClause.WriteString(" ~ ")
-				case queryp.FilterOpNotRegexp:
+				case queryp.FilterOp_NotRegexp:
 					queryClause.WriteString(" !~ ")
-				case queryp.FilterOpIRegexp:
+				case queryp.FilterOp_IRegexp:
 					queryClause.WriteString(" ~* ")
-				case queryp.FilterOpNotIRegexp:
+				case queryp.FilterOp_NotIRegexp:
 					queryClause.WriteString(" !~* ")
 				default:
 					return fmt.Errorf("invalid op %s for field %s", ft.Op.String(), field)
@@ -98,12 +98,12 @@ func FilterQuery(fft queryp.FilterFieldTypes, filter queryp.Filter, queryClause 
 				*queryParams = append(*queryParams, ft.Value)
 				queryClause.WriteString("$" + strconv.Itoa(len(*queryParams)))
 
-			case queryp.FilterTypeBool:
+			case queryp.FilterType_Bool:
 
 				switch ft.Op {
-				case queryp.FilterOpEquals:
+				case queryp.FilterOp_Equals:
 					queryClause.WriteString(" = ")
-				case queryp.FilterOpNotEquals:
+				case queryp.FilterOp_NotEquals:
 					queryClause.WriteString(" != ")
 				default:
 					return fmt.Errorf("invalid op %s for field %s", ft.Op.String(), field)

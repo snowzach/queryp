@@ -41,14 +41,14 @@ func ParseQuery(q string) (*QueryParameters, error) {
 	parse = func(depth int) (Filter, error) {
 
 		start := true
-		filter := make([]FilterTerm, 0)
+		filter := make([]*FilterTerm, 0)
 
 		for {
 
 			// Parse the filter logic
 			var logic FilterLogic // Default is START if omitted
 			if start {
-				logic = FilterLogicAnd
+				logic = FilterLogic_And
 				start = false
 			} else {
 				var found bool
@@ -84,7 +84,7 @@ func ParseQuery(q string) (*QueryParameters, error) {
 				}
 				pos++
 				// Append sub-filter
-				filter = append(filter, FilterTerm{
+				filter = append(filter, &FilterTerm{
 					Logic:     logic,
 					SubFilter: subFilter, // Parse, handle redundant parens
 				})
@@ -214,7 +214,7 @@ func ParseQuery(q string) (*QueryParameters, error) {
 				if depth == 0 {
 					switch field {
 					case "limit":
-						if op != FilterOpEquals {
+						if op != FilterOp_Equals {
 							return nil, fmt.Errorf("invalid operation for limit option")
 						}
 						qp.Limit, err = strconv.ParseInt(value, 10, 64)
@@ -223,7 +223,7 @@ func ParseQuery(q string) (*QueryParameters, error) {
 						}
 						field = "" // mark field parsed
 					case "offset":
-						if op != FilterOpEquals {
+						if op != FilterOp_Equals {
 							return nil, fmt.Errorf("invalid operation for offset option")
 						}
 						qp.Offset, err = strconv.ParseInt(value, 10, 64)
@@ -232,19 +232,19 @@ func ParseQuery(q string) (*QueryParameters, error) {
 						}
 						field = "" // mark field parsed
 					case "sort":
-						if op != FilterOpEquals {
+						if op != FilterOp_Equals {
 							return nil, fmt.Errorf("invalid operation for sort option")
 						}
 						for _, sortField := range strings.Split(value, ",") {
 							if len(sortField) > 1 && sortField[0] == '-' { // Reverse sort
-								qp.Sort = append(qp.Sort, SortTerm{Field: sortField[1:], Desc: true})
+								qp.Sort = append(qp.Sort, &SortTerm{Field: sortField[1:], Desc: true})
 							} else {
-								qp.Sort = append(qp.Sort, SortTerm{Field: sortField})
+								qp.Sort = append(qp.Sort, &SortTerm{Field: sortField})
 							}
 						}
 						field = "" // mark field parsed
 					case "option":
-						if op != FilterOpEquals {
+						if op != FilterOp_Equals {
 							return nil, fmt.Errorf("invalid operation for option")
 						}
 						if qp.Options == nil {
@@ -264,7 +264,7 @@ func ParseQuery(q string) (*QueryParameters, error) {
 
 				// Otherwise add a filter option
 				if len(field) > 0 { // field will be empty if it was parsed as an option
-					filter = append(filter, FilterTerm{
+					filter = append(filter, &FilterTerm{
 						Logic: logic,
 						Op:    op,
 						Field: Field(field),

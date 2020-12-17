@@ -20,14 +20,14 @@ func TestQueryParser(t *testing.T) {
 	var queryParams = []interface{}{}
 
 	filterFields := queryp.FilterFieldTypes{
-		"another":           queryp.FilterTypeString,
-		"yet":               queryp.FilterTypeString,
-		"field":             queryp.FilterTypeString,
-		"limit":             queryp.FilterTypeNumeric,
-		"third":             queryp.FilterFieldCustom{FieldName: "whoathird", FilterType: queryp.FilterTypeString},
-		"thing.id":          queryp.FilterTypeString,
-		"thing.name":        queryp.FilterTypeString,
-		"thing.description": queryp.FilterTypeString,
+		"another":           queryp.FilterType_String,
+		"yet":               queryp.FilterType_String,
+		"field":             queryp.FilterType_String,
+		"limit":             queryp.FilterType_Numeric,
+		"third":             queryp.FilterFieldCustom{FieldName: "whoathird", FilterType: queryp.FilterType_String},
+		"thing.id":          queryp.FilterType_String,
+		"thing.name":        queryp.FilterType_String,
+		"thing.description": queryp.FilterType_String,
 	}
 
 	sortFields := queryp.SortFields{

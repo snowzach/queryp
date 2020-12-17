@@ -32,7 +32,7 @@ func (fft FilterFieldTypes) FindFilterType(search string) (string, FilterType) {
 			return filter, filterField.GetFilterType()
 		}
 	}
-	return "", FilterTypeNotFound
+	return "", FilterType_NotFound
 
 }
 
@@ -96,6 +96,6 @@ func (f Filter) Append(logic FilterLogic, field Field, op FilterOp, value interf
 	default:
 		sval = fmt.Sprintf("%v", value)
 	}
-	return append(f, FilterTerm{Logic: logic, Field: field, Op: op, Value: sval})
+	return append(f, &FilterTerm{Logic: logic, Field: field, Op: op, Value: sval})
 
 }
