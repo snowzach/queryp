@@ -3,24 +3,30 @@ GOPATH ?= ${HOME}/go
 PACKAGENAME := $(shell go list -m -f '{{.Path}}')
 TOOLS := ${GOPATH}/src/github.com/golang/protobuf/proto \
 	${GOPATH}/bin/protoc-gen-gogoslick
-export PROTOBUF_INCLUDES = -I. -I/usr/include -I${GOPATH}/src
+
+# Include protobuf sources
+PROTOBUF_INCLUDES := -I.
+PROTOBUF_INCLUDES := $(PROTOBUF_INCLUDES) -I$(shell go list -e -f '{{.Dir}}' github.com/gogo/protobuf/gogoproto)/..
+
+# Map protobuf includes to the Go package containing the generated Go code.
+PROTO_MAPPINGS :=
 
 PROTOS := ./queryp.pb.go
 
 .PHONY: default
-default: ${PROTOS}
+default: $(PROTOS)
 
-tools: 
+tools: $(TOOLS)
 
 ${GOPATH}/src/github.com/golang/protobuf/proto:
 	go get github.com/golang/protobuf/proto
 
-${GOPATH}/bin/protoc-gen-gogoslick:
-	go get github.com/gogo/protobuf/protoc-gen-gogoslick
+${GOPATH}/bin/protoc-gen-gogofaster:
+	go get github.com/gogo/protobuf/protoc-gen-gogofaster
 
-# Handle any non-specific protobufs
-%.pb.go: %.proto ${TOOLS}
-	protoc ${PROTOBUF_INCLUDES} --gogoslick_out=paths=source_relative,plugins=grpc:. $*.proto
+# Handle compiling the protobufs
+%.pb.go: %.proto tools
+	protoc ${PROTOBUF_INCLUDES} --gogofaster_out=$(PROTO_MAPPINGS),paths=source_relative:. $*.proto
 
 .PHONY: test
 test: tools ${PROTOS}
