@@ -17,14 +17,14 @@ message SortTerm {
 }
 
 enum FilterLogic {
-    FLNone = 0;
+    FilterLogicNone = 0;
 
     And = 1;
     Or = 2;
 }
 
 enum FilterOp {
-    FONone = 0;
+    FilterOpNone = 0;
 
     Equals = 1;
     NotEquals = 2;
@@ -46,7 +46,7 @@ enum FilterOp {
 }
 
 enum FilterType {
-    FTNone = 0;
+    FilterTypeNone = 0;
     
     NotFound = 1;
 	Simple = 2;
