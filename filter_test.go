@@ -11,6 +11,8 @@ func TestFilterAppend(t *testing.T) {
 	var qp QueryParameters
 	qp.Filter = append(qp.Filter, FilterTerm{Logic: FilterLogicAnd, Field: "field1", Op: FilterOpEquals, Value: "1"})
 	qp.Options = qp.Options.Set("field", "value")
-	assert.Equal(t, `{"filter":[{"logic":"AND","op":"=","field":"field1","value":"1"}],"sort":null,"options":{"field":"value"},"limit":0,"offset":0}`+"\n", qp.String())
+	qp.Limit = 10
+	qp.Offset = 20
+	assert.Equal(t, `field1=1&limit=10&offset=20&option[field]=value`, qp.String())
 
 }

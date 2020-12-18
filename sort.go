@@ -20,3 +20,13 @@ func (sf SortField) GetFieldName() string {
 	}
 	return m[0]
 }
+
+func (ft SortTerm) String() string {
+
+	if ft.Desc {
+		return "-" + ft.Field
+	} else {
+		return ft.Field
+	}
+
+}

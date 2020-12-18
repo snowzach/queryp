@@ -21,9 +21,9 @@ func (logic FilterLogic) MarshalJSON() ([]byte, error) {
 func (logic FilterLogic) String() string {
 	switch logic {
 	case FilterLogicAnd:
-		return "AND"
+		return FilterLogicSymAnd
 	case FilterLogicOr:
-		return "OR"
+		return FilterLogicSymOr
 	default:
 		return fmt.Sprintf(`LOGIC(%d)`, logic)
 	}

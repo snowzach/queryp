@@ -99,3 +99,34 @@ func (f Filter) Append(logic FilterLogic, field Field, op FilterOp, value interf
 	return append(f, FilterTerm{Logic: logic, Field: field, Op: op, Value: sval})
 
 }
+
+func (f Filter) String() string {
+
+	var sb strings.Builder
+
+	for i, ft := range f {
+		if i > 0 {
+			sb.WriteString(ft.Logic.String())
+		}
+		if len(ft.SubFilter) > 0 {
+			_, _ = sb.WriteString("(")
+			_, _ = sb.WriteString(Filter(ft.SubFilter).String())
+			_, _ = sb.WriteString(")")
+		} else {
+			sb.WriteString(ft.String())
+		}
+	}
+
+	return sb.String()
+
+}
+
+func (ft FilterTerm) String() string {
+
+	var sb strings.Builder
+	sb.WriteString(ft.Field)
+	sb.WriteString(ft.Op.String())
+	sb.WriteString(ft.Value)
+	return sb.String()
+
+}
