@@ -5,6 +5,8 @@ import "fmt"
 const (
 	FilterLogicSymAnd = "&"
 	FilterLogicSymOr  = "|"
+
+	ValueNeedsQuote = `&|)"`
 )
 
 var (
@@ -13,10 +15,6 @@ var (
 		FilterLogicSymOr:  FilterLogicOr,
 	}
 )
-
-func (logic FilterLogic) MarshalJSON() ([]byte, error) {
-	return []byte(`"` + logic.String() + `"`), nil
-}
 
 func (logic FilterLogic) String() string {
 	switch logic {

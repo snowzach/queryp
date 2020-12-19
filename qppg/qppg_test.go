@@ -31,10 +31,10 @@ func TestQueryParser(t *testing.T) {
 	}
 
 	sortFields := queryp.SortFields{
-		"test1",
-		"test2",
-		"test3:test7",
-		"another",
+		"test1":   "",
+		"test2":   "",
+		"test3":   "test7",
+		"another": "",
 	}
 
 	err = FilterQuery(filterFields, q.Filter, &queryClause, &queryParams)

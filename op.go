@@ -22,6 +22,8 @@ const (
 	FilterOpSymNotRegexp  = "!:"
 	FilterOpSymIRegexp    = ":~"
 	FilterOpSymNotIRegexp = "!:~"
+
+	FieldNeedsQuote = `!=<>~:"`
 )
 
 var (

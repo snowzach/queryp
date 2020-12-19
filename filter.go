@@ -6,6 +6,14 @@ import (
 	"strings"
 )
 
+// Filter is a slice of FilterTerms that are combined to make the full filter
+type Filter []FilterTerm
+
+// Field is just a string
+type Field = string
+
+// FilterField is an interface used to allow specifying a filter for a particular filter type.
+// if GetFieldName returns an empty string, it will assume the FieldName is the same as the field name specified in the map
 type FilterField interface {
 	GetFieldName() string
 	GetFilterType() FilterType
@@ -13,6 +21,8 @@ type FilterField interface {
 
 type FilterFieldTypes map[Field]FilterField
 
+// FindFilterType search the FilterFieldTypes to find a matching field name.
+// First it searches for exact matches and then
 func (fft FilterFieldTypes) FindFilterType(search string) (string, FilterType) {
 
 	if filterField, found := fft[search]; found {
@@ -36,27 +46,33 @@ func (fft FilterFieldTypes) FindFilterType(search string) (string, FilterType) {
 
 }
 
+// GetFieldName returns empty field indicating it should use the same name as the filter type
 func (ft FilterType) GetFieldName() Field {
 	return ""
 }
 
+// GetFilterType for the default filter types
 func (ft FilterType) GetFilterType() FilterType {
 	return ft
 }
 
+// FilterFieldCustom is used to have a different name for a field from what can be specified in the parsable string
 type FilterFieldCustom struct {
 	FieldName  string
 	FilterType FilterType
 }
 
+// GetFieldName to return filter name from a Custom filter type
 func (ffc FilterFieldCustom) GetFieldName() Field {
 	return ffc.FieldName
 }
 
+// GetFilterType to return the filter type from a Custom filter type
 func (ffc FilterFieldCustom) GetFilterType() FilterType {
 	return ffc.FilterType
 }
 
+// Convienience function for appending to a filter
 func (f Filter) Append(logic FilterLogic, field Field, op FilterOp, value interface{}) Filter {
 
 	var sval string
@@ -100,6 +116,7 @@ func (f Filter) Append(logic FilterLogic, field Field, op FilterOp, value interf
 
 }
 
+// Filter turns it into it's string representations
 func (f Filter) String() string {
 
 	var sb strings.Builder
@@ -121,12 +138,7 @@ func (f Filter) String() string {
 
 }
 
+// String converts FilterTerm into it's string representation
 func (ft FilterTerm) String() string {
-
-	var sb strings.Builder
-	sb.WriteString(ft.Field)
-	sb.WriteString(ft.Op.String())
-	sb.WriteString(ft.Value)
-	return sb.String()
-
+	return SafeField(ft.Field) + ft.Op.String() + SafeValue(ft.Value)
 }
