@@ -302,6 +302,15 @@ func ParseQuery(q string) (*QueryParameters, error) {
 
 }
 
+// Reset clears query parameters for reuse
+func (qp *QueryParameters) Reset() {
+	qp.Filter = nil
+	qp.Sort = nil
+	qp.Options = nil
+	qp.Limit = 0
+	qp.Offset = 0
+}
+
 // String will turn query parameters back into a string that is equivalent to what can be parsed
 func (qp *QueryParameters) String() string {
 
