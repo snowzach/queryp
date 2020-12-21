@@ -1,0 +1,62 @@
+syntax="proto3";
+package queryp;
+
+import "google/protobuf/struct.proto";
+
+option go_package = "github.com/snowzach/queryp/qppb";
+
+message QueryParameters {
+    repeated FilterTerm filter = 1;
+    repeated SortTerm sort = 2;
+    map<string, string> options = 3;
+    int64 limit = 4;
+    int64 offset = 5;
+}
+
+message SortTerm {
+    string field = 1;
+    bool desc = 2;
+}
+
+enum FilterLogic {
+    FilterLogicAnd = 0;
+    FilterLogicOr = 1;
+}
+
+enum FilterOp {
+    FilterOpEquals = 0;
+    FilterOpNotEquals = 1;
+
+	FilterOpLessThan = 2;
+	FilterOpLessThanEqual = 3;
+	FilterOpGreaterThan = 4;
+	FilterOpGreaterThanEqual = 5;
+
+	FilterOpLike = 6;
+	FilterOpNotLike = 7;
+	FilterOpILike = 8;
+	FilterOpNotILike = 9;
+
+	FilterOpRegexp = 10;
+	FilterOpNotRegexp = 11;
+	FilterOpIRegexp = 12;
+    FilterOpNotIRegexp = 13;
+}
+
+enum FilterType {
+    FilterTypeNotFound = 0;
+	FilterTypeSimple = 1;
+    FilterTypeString = 2;
+    FilterTypeNumeric = 3;
+	FilterTypeTime = 4;
+	FilterTypeBool = 5;
+}
+
+message FilterTerm {
+    FilterLogic logic = 1;
+    FilterOp op = 2;
+    string field = 3;
+    google.protobuf.Value value = 4;
+
+    repeated FilterTerm sub_filter = 10;
+}

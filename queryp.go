@@ -8,6 +8,17 @@ import (
 	"strings"
 )
 
+// Field is just a string
+type Field = string
+
+type QueryParameters struct {
+	Filter  Filter  `json:"filter"`
+	Sort    Sort    `json:"sort"`
+	Options Options `json:"options"`
+	Limit   int64   `json:"limit"`
+	Offset  int64   `json:"offset"`
+}
+
 // Handles parsing query requests with complex matching and precedence
 var (
 	optionParser = regexp.MustCompile("^option\\[(.*)\\]$")
@@ -353,5 +364,49 @@ func SafeValue(value string) string {
 		return `"` + strings.ReplaceAll(value, `"`, `\"`) + `"`
 	}
 	return value
+
+}
+
+// Convert our values to a string
+func ValueString(value interface{}) string {
+
+	var sval string
+	switch s := value.(type) {
+	case string:
+		sval = s
+	case []byte:
+		sval = string(s)
+	case fmt.Stringer:
+		sval = s.String()
+	case bool:
+		sval = strconv.FormatBool(s)
+	case float64:
+		sval = strconv.FormatFloat(s, 'f', -1, 64)
+	case float32:
+		sval = strconv.FormatFloat(float64(s), 'f', -1, 32)
+	case int:
+		sval = strconv.FormatInt(int64(s), 10)
+	case int8:
+		sval = strconv.FormatInt(int64(s), 10)
+	case int32:
+		sval = strconv.FormatInt(int64(s), 10)
+	case int64:
+		sval = strconv.FormatInt(int64(s), 10)
+	case uint:
+		sval = strconv.FormatUint(uint64(s), 10)
+	case uint8:
+		sval = strconv.FormatUint(uint64(s), 10)
+	case uint16:
+		sval = strconv.FormatUint(uint64(s), 10)
+	case uint32:
+		sval = strconv.FormatUint(uint64(s), 10)
+	case uint64:
+		sval = strconv.FormatUint(uint64(s), 10)
+	case nil:
+		sval = "null"
+	default:
+		sval = fmt.Sprintf("%v", value)
+	}
+	return sval
 
 }

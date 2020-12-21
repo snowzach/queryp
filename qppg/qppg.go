@@ -109,7 +109,7 @@ func FilterQuery(fft queryp.FilterFieldTypes, filter queryp.Filter, queryClause 
 					return fmt.Errorf("invalid op %s for field %s", ft.Op.String(), field)
 				}
 
-				boolVal, err := strconv.ParseBool(ft.Value)
+				boolVal, err := strconv.ParseBool(queryp.ValueString(ft.Value))
 				if err != nil {
 					return fmt.Errorf("invalid bool value %s for field %s", ft.Value, field)
 				}

@@ -2,7 +2,24 @@ package queryp
 
 import "fmt"
 
+type FilterOp int
+
 const (
+	FilterOpEquals           FilterOp = 0
+	FilterOpNotEquals        FilterOp = 1
+	FilterOpLessThan         FilterOp = 2
+	FilterOpLessThanEqual    FilterOp = 3
+	FilterOpGreaterThan      FilterOp = 4
+	FilterOpGreaterThanEqual FilterOp = 5
+	FilterOpLike             FilterOp = 6
+	FilterOpNotLike          FilterOp = 7
+	FilterOpILike            FilterOp = 8
+	FilterOpNotILike         FilterOp = 9
+	FilterOpRegexp           FilterOp = 10
+	FilterOpNotRegexp        FilterOp = 11
+	FilterOpIRegexp          FilterOp = 12
+	FilterOpNotIRegexp       FilterOp = 13
+
 	FilterOpSymEquals      = "="
 	FilterOpSymNotEquals   = "!="
 	FilterOpSymLessThan    = "<"

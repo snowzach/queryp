@@ -14,7 +14,7 @@ func TestQueryParser(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, int64(10), q.Limit)
 	assert.Equal(t, int64(0), q.Offset)
-	assert.Equal(t, []queryp.SortTerm{{Field: "test3", Desc: false}, {Field: "another", Desc: true}}, q.Sort)
+	assert.Equal(t, queryp.Sort{{Field: "test3", Desc: false}, {Field: "another", Desc: true}}, q.Sort)
 
 	var queryClause strings.Builder
 	var queryParams = []interface{}{}
