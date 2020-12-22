@@ -8,8 +8,8 @@ import (
 
 func TestQueryParser(t *testing.T) {
 
-	q, err := ParseQuery("field=value&(another<=value|yet=another1|limit=weee)|third=value&limit=10&option=beans&sort=test,-another")
+	q, err := ParseQuery(`field=value&(another<=value|yet=another1|limit=weee)|bob=(a,"\"b",null,"null")|third=value&limit=10&option=beans&sort=test,-another`)
 	assert.Nil(t, err)
-	assert.Equal(t, `field=value&(another<=value|yet=another1|limit=weee)|third=value&limit=10&option=beans&sort=test,-another`, q.String())
+	assert.Equal(t, `field=value&(another<=value|yet=another1|limit=weee)|bob=(a,"\"b",null,"null")|third=value&limit=10&option=beans&sort=test,-another`, q.String())
 
 }

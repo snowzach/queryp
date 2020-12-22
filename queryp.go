@@ -111,6 +111,7 @@ func ParseQuery(q string) (*QueryParameters, error) {
 					return nil, fmt.Errorf("unexpected end of input at pos %d", pos)
 				}
 				if q[pos] == '"' {
+					pos++
 				fieldLoopQuote:
 					for {
 						if pos == len(q) {
@@ -174,11 +175,14 @@ func ParseQuery(q string) (*QueryParameters, error) {
 				}
 
 				// value identifier
+				var valueQuoted bool
 				var valueb strings.Builder
 				if pos == len(q) {
 					return nil, fmt.Errorf("unexpected end of input at pos %d", pos)
 				}
 				if q[pos] == '"' {
+					pos++
+					valueQuoted = true
 				valueLoopQuote:
 					for {
 						if pos == len(q) {
@@ -199,6 +203,88 @@ func ParseQuery(q string) (*QueryParameters, error) {
 						}
 						pos++
 					}
+
+					// Support field=(value1,value2,"value3") in syntax
+				} else if op == FilterOpEquals && q[pos] == '(' {
+					pos++
+					values := make([]interface{}, 0)
+					for {
+						var valueInQuoted bool
+						if pos == len(q) {
+							return nil, fmt.Errorf("unexpected end of input at pos %d", pos)
+						}
+						if q[pos] == '"' {
+							pos++
+							valueInQuoted = true
+						valueInLoopQuote:
+							for {
+								if pos == len(q) {
+									return nil, fmt.Errorf("unexpected end of input at pos %d", pos)
+								}
+								switch q[pos] {
+								case '"':
+									pos++
+									break valueInLoopQuote
+								case '\\': // Escape whatever
+									pos++
+									if pos == len(q) {
+										return nil, fmt.Errorf("unexpected end of input at pos %d", pos)
+									}
+									valueb.WriteByte(q[pos])
+								default:
+									valueb.WriteByte(q[pos])
+								}
+								pos++
+							}
+						} else {
+						valueInLoop:
+							for {
+								if pos == len(q) {
+									// End of input
+									break valueInLoop
+								}
+								switch q[pos] {
+								case ',', ')':
+									break valueInLoop
+								default:
+									valueb.WriteByte(q[pos])
+								}
+								pos++
+							}
+						}
+						if valueb.Len() == 0 {
+							return nil, fmt.Errorf("invalid value at pos %d", pos)
+						}
+						// If the value was null and not quoted, we want it to be an actual nil
+						if value := valueb.String(); value == NullValue && !valueInQuoted {
+							values = append(values, nil)
+						} else {
+							values = append(values, value)
+						}
+						valueb.Reset()
+
+						// See if there are more values or done with values
+						if pos == len(q) {
+							return nil, fmt.Errorf("unexpected end of input at pos %d", pos)
+						}
+						if q[pos] == ')' {
+							pos++
+							break // Done paring options
+						} else if q[pos] == ',' {
+							pos++
+						} else {
+							return nil, fmt.Errorf("unexpected value at pos %d", pos)
+						}
+					}
+
+					filter = append(filter, FilterTerm{
+						Logic: logic,
+						Op:    FilterOpIn,
+						Field: Field(field),
+						Value: values,
+					})
+					continue // Continue to the next op
+
 				} else {
 				valueLoop:
 					for {
@@ -275,12 +361,21 @@ func ParseQuery(q string) (*QueryParameters, error) {
 
 				// Otherwise add a filter option
 				if len(field) > 0 { // field will be empty if it was parsed as an option
-					filter = append(filter, FilterTerm{
-						Logic: logic,
-						Op:    op,
-						Field: Field(field),
-						Value: value,
-					})
+					if value == NullValue && !valueQuoted {
+						filter = append(filter, FilterTerm{
+							Logic: logic,
+							Op:    op,
+							Field: Field(field),
+							Value: nil,
+						})
+					} else {
+						filter = append(filter, FilterTerm{
+							Logic: logic,
+							Op:    op,
+							Field: Field(field),
+							Value: value,
+						})
+					}
 				}
 			}
 
@@ -366,16 +461,6 @@ func SafeField(field string) string {
 
 }
 
-// SafeValue will quote and escape values if they contain logic symbols or quotes
-func SafeValue(value string) string {
-
-	if strings.ContainsAny(value, `&|)"`) {
-		return `"` + strings.ReplaceAll(value, `"`, `\"`) + `"`
-	}
-	return value
-
-}
-
 // Convert our values to a string
 func ValueString(value interface{}) string {
 
@@ -388,34 +473,47 @@ func ValueString(value interface{}) string {
 	case fmt.Stringer:
 		sval = s.String()
 	case bool:
-		sval = strconv.FormatBool(s)
+		return strconv.FormatBool(s)
 	case float64:
-		sval = strconv.FormatFloat(s, 'f', -1, 64)
+		return strconv.FormatFloat(s, 'f', -1, 64)
 	case float32:
-		sval = strconv.FormatFloat(float64(s), 'f', -1, 32)
+		return strconv.FormatFloat(float64(s), 'f', -1, 32)
 	case int:
-		sval = strconv.FormatInt(int64(s), 10)
+		return strconv.FormatInt(int64(s), 10)
 	case int8:
-		sval = strconv.FormatInt(int64(s), 10)
+		return strconv.FormatInt(int64(s), 10)
 	case int32:
-		sval = strconv.FormatInt(int64(s), 10)
+		return strconv.FormatInt(int64(s), 10)
 	case int64:
-		sval = strconv.FormatInt(int64(s), 10)
+		return strconv.FormatInt(int64(s), 10)
 	case uint:
-		sval = strconv.FormatUint(uint64(s), 10)
+		return strconv.FormatUint(uint64(s), 10)
 	case uint8:
-		sval = strconv.FormatUint(uint64(s), 10)
+		return strconv.FormatUint(uint64(s), 10)
 	case uint16:
-		sval = strconv.FormatUint(uint64(s), 10)
+		return strconv.FormatUint(uint64(s), 10)
 	case uint32:
-		sval = strconv.FormatUint(uint64(s), 10)
+		return strconv.FormatUint(uint64(s), 10)
 	case uint64:
-		sval = strconv.FormatUint(uint64(s), 10)
+		return strconv.FormatUint(uint64(s), 10)
 	case nil:
-		sval = "null"
+		return "null"
+	case []interface{}:
+		values := make([]string, len(s), len(s))
+		for i, v := range s {
+			values[i] = ValueString(v)
+		}
+		return strings.Join(values, ",")
 	default:
 		sval = fmt.Sprintf("%v", value)
 	}
+
+	if strings.ContainsAny(sval, `&|)"`) {
+		return `"` + strings.ReplaceAll(sval, `"`, `\"`) + `"`
+	} else if sval == NullValue {
+		return `"null"`
+	}
+
 	return sval
 
 }

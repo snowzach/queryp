@@ -19,6 +19,7 @@ const (
 	FilterOpNotRegexp        FilterOp = 11
 	FilterOpIRegexp          FilterOp = 12
 	FilterOpNotIRegexp       FilterOp = 13
+	FilterOpIn               FilterOp = 14
 
 	FilterOpSymEquals      = "="
 	FilterOpSymNotEquals   = "!="
@@ -39,6 +40,9 @@ const (
 	FilterOpSymNotRegexp  = "!:"
 	FilterOpSymIRegexp    = ":~"
 	FilterOpSymNotIRegexp = "!:~"
+
+	FilterOpInStart = "=("
+	FilterOpInEnd   = ")"
 
 	FieldNeedsQuote = `!=<>~:"`
 )
@@ -77,6 +81,7 @@ var (
 		FilterOpNotRegexp:        FilterOpSymNotRegexp,
 		FilterOpIRegexp:          FilterOpSymIRegexp,
 		FilterOpNotIRegexp:       FilterOpSymNotIRegexp,
+		FilterOpIn:               FilterOpInStart,
 	}
 )
 

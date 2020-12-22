@@ -4,6 +4,8 @@ import (
 	"strings"
 )
 
+const NullValue = "null"
+
 // Filter is a slice of FilterTerms that are combined to make the full filter
 type Filter []FilterTerm
 
@@ -17,7 +19,10 @@ type FilterTerm struct {
 
 // String converts FilterTerm into it's string representation
 func (ft FilterTerm) String() string {
-	return SafeField(ft.Field) + ft.Op.String() + SafeValue(ValueString(ft.Value))
+	if ft.Op == FilterOpIn {
+		return SafeField(ft.Field) + ft.Op.String() + ValueString(ft.Value) + FilterOpInEnd
+	}
+	return SafeField(ft.Field) + ft.Op.String() + ValueString(ft.Value)
 }
 
 // Convienience function for appending to a filter

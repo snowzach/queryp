@@ -54,6 +54,8 @@ func FilterQuery(fft queryp.FilterFieldTypes, filter queryp.Filter, queryClause 
 					queryClause.WriteString(" > ")
 				case queryp.FilterOpGreaterThanEqual:
 					queryClause.WriteString(" >= ")
+				case queryp.FilterOpIn:
+					queryClause.WriteString(" && ") // Overlap operator
 				default:
 					return fmt.Errorf("invalid op %s for field %s", ft.Op.String(), field)
 				}
@@ -91,6 +93,8 @@ func FilterQuery(fft queryp.FilterFieldTypes, filter queryp.Filter, queryClause 
 					queryClause.WriteString(" ~* ")
 				case queryp.FilterOpNotIRegexp:
 					queryClause.WriteString(" !~* ")
+				case queryp.FilterOpIn:
+					queryClause.WriteString(" && ") // Overlap operator
 				default:
 					return fmt.Errorf("invalid op %s for field %s", ft.Op.String(), field)
 				}
@@ -105,6 +109,8 @@ func FilterQuery(fft queryp.FilterFieldTypes, filter queryp.Filter, queryClause 
 					queryClause.WriteString(" = ")
 				case queryp.FilterOpNotEquals:
 					queryClause.WriteString(" != ")
+				case queryp.FilterOpIn:
+					queryClause.WriteString(" && ") // Overlap operator
 				default:
 					return fmt.Errorf("invalid op %s for field %s", ft.Op.String(), field)
 				}
@@ -116,6 +122,9 @@ func FilterQuery(fft queryp.FilterFieldTypes, filter queryp.Filter, queryClause 
 
 				*queryParams = append(*queryParams, boolVal)
 				queryClause.WriteString("$" + strconv.Itoa(len(*queryParams)))
+
+			default:
+				return fmt.Errorf("invalid filter type for field %s", field)
 
 			}
 		}
