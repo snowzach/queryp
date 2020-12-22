@@ -56,6 +56,11 @@ func ParseQuery(q string) (*QueryParameters, error) {
 
 		for {
 
+			// Are we done parsing this loop
+			if pos == len(q) || (q[pos] == ')' && depth > 0) {
+				break
+			}
+
 			// Parse the filter logic
 			var logic FilterLogic // Default is START if omitted
 			if start {
@@ -283,6 +288,7 @@ func ParseQuery(q string) (*QueryParameters, error) {
 						Field: Field(field),
 						Value: values,
 					})
+
 					continue // Continue to the next op
 
 				} else {
@@ -377,10 +383,6 @@ func ParseQuery(q string) (*QueryParameters, error) {
 						})
 					}
 				}
-			}
-
-			if pos == len(q) || (q[pos] == ')' && depth > 0) {
-				break
 			}
 		}
 
