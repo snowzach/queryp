@@ -185,7 +185,91 @@ func ParseQuery(q string) (*QueryParameters, error) {
 				if pos == len(q) {
 					return nil, fmt.Errorf("unexpected end of input at pos %d", pos)
 				}
-				if q[pos] == '"' {
+
+				// Support field=(value1,value2,"value3") in syntax
+				if q[pos] == '(' {
+					pos++
+					values := make([]interface{}, 0)
+					for {
+						var multaValueQuoted bool
+						if pos == len(q) {
+							return nil, fmt.Errorf("unexpected end of input at pos %d", pos)
+						}
+						if q[pos] == '"' {
+							pos++
+							multaValueQuoted = true
+						multiValueLoopQuote:
+							for {
+								if pos == len(q) {
+									return nil, fmt.Errorf("unexpected end of input at pos %d", pos)
+								}
+								switch q[pos] {
+								case '"':
+									pos++
+									break multiValueLoopQuote
+								case '\\': // Escape whatever
+									pos++
+									if pos == len(q) {
+										return nil, fmt.Errorf("unexpected end of input at pos %d", pos)
+									}
+									valueb.WriteByte(q[pos])
+								default:
+									valueb.WriteByte(q[pos])
+								}
+								pos++
+							}
+						} else {
+						multiValueLoop:
+							for {
+								if pos == len(q) {
+									// End of input
+									break multiValueLoop
+								}
+								switch q[pos] {
+								case ',', ')':
+									break multiValueLoop
+								default:
+									valueb.WriteByte(q[pos])
+								}
+								pos++
+							}
+						}
+						if valueb.Len() == 0 {
+							return nil, fmt.Errorf("invalid value at pos %d", pos)
+						}
+						// If the value was null and not quoted, we want it to be an actual nil
+						if value := valueb.String(); value == NullValue && !multaValueQuoted {
+							values = append(values, nil)
+						} else {
+							values = append(values, value)
+						}
+						valueb.Reset()
+
+						// See if there are more values or done with values
+						if pos == len(q) {
+							return nil, fmt.Errorf("unexpected end of input at pos %d", pos)
+						}
+						if q[pos] == ')' {
+							pos++
+							break // Done paring options
+						} else if q[pos] == ',' { // additional values
+							pos++
+						} else {
+							return nil, fmt.Errorf("unexpected value at pos %d", pos)
+						}
+					}
+
+					filter = append(filter, FilterTerm{
+						Logic: logic,
+						Op:    op,
+						Field: Field(field),
+						Value: values,
+					})
+
+					continue
+
+					// Single quoted value
+				} else if q[pos] == '"' {
 					pos++
 					valueQuoted = true
 				valueLoopQuote:
@@ -209,88 +293,7 @@ func ParseQuery(q string) (*QueryParameters, error) {
 						pos++
 					}
 
-					// Support field=(value1,value2,"value3") in syntax
-				} else if op == FilterOpEquals && q[pos] == '(' {
-					pos++
-					values := make([]interface{}, 0)
-					for {
-						var valueInQuoted bool
-						if pos == len(q) {
-							return nil, fmt.Errorf("unexpected end of input at pos %d", pos)
-						}
-						if q[pos] == '"' {
-							pos++
-							valueInQuoted = true
-						valueInLoopQuote:
-							for {
-								if pos == len(q) {
-									return nil, fmt.Errorf("unexpected end of input at pos %d", pos)
-								}
-								switch q[pos] {
-								case '"':
-									pos++
-									break valueInLoopQuote
-								case '\\': // Escape whatever
-									pos++
-									if pos == len(q) {
-										return nil, fmt.Errorf("unexpected end of input at pos %d", pos)
-									}
-									valueb.WriteByte(q[pos])
-								default:
-									valueb.WriteByte(q[pos])
-								}
-								pos++
-							}
-						} else {
-						valueInLoop:
-							for {
-								if pos == len(q) {
-									// End of input
-									break valueInLoop
-								}
-								switch q[pos] {
-								case ',', ')':
-									break valueInLoop
-								default:
-									valueb.WriteByte(q[pos])
-								}
-								pos++
-							}
-						}
-						if valueb.Len() == 0 {
-							return nil, fmt.Errorf("invalid value at pos %d", pos)
-						}
-						// If the value was null and not quoted, we want it to be an actual nil
-						if value := valueb.String(); value == NullValue && !valueInQuoted {
-							values = append(values, nil)
-						} else {
-							values = append(values, value)
-						}
-						valueb.Reset()
-
-						// See if there are more values or done with values
-						if pos == len(q) {
-							return nil, fmt.Errorf("unexpected end of input at pos %d", pos)
-						}
-						if q[pos] == ')' {
-							pos++
-							break // Done paring options
-						} else if q[pos] == ',' {
-							pos++
-						} else {
-							return nil, fmt.Errorf("unexpected value at pos %d", pos)
-						}
-					}
-
-					filter = append(filter, FilterTerm{
-						Logic: logic,
-						Op:    FilterOpIn,
-						Field: Field(field),
-						Value: values,
-					})
-
-					continue // Continue to the next op
-
+					// Single unquoted value
 				} else {
 				valueLoop:
 					for {
@@ -308,6 +311,7 @@ func ParseQuery(q string) (*QueryParameters, error) {
 					}
 
 				}
+
 				if valueb.Len() == 0 {
 					return nil, fmt.Errorf("invalid value at pos %d", pos)
 				}
@@ -365,8 +369,9 @@ func ParseQuery(q string) (*QueryParameters, error) {
 					}
 				}
 
-				// Otherwise add a filter option
+				// This is a field/value option
 				if len(field) > 0 { // field will be empty if it was parsed as an option
+					// Handle an actual nil value
 					if value == NullValue && !valueQuoted {
 						filter = append(filter, FilterTerm{
 							Logic: logic,

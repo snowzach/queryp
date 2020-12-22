@@ -54,14 +54,16 @@ func FilterQuery(fft queryp.FilterFieldTypes, filter queryp.Filter, queryClause 
 					queryClause.WriteString(" > ")
 				case queryp.FilterOpGreaterThanEqual:
 					queryClause.WriteString(" >= ")
-				case queryp.FilterOpIn:
-					queryClause.WriteString(" && ") // Overlap operator
 				default:
 					return fmt.Errorf("invalid op %s for field %s", ft.Op.String(), field)
 				}
 
 				*queryParams = append(*queryParams, ft.Value)
-				queryClause.WriteString("$" + strconv.Itoa(len(*queryParams)))
+				if _, ok := ft.Value.([]interface{}); ok {
+					queryClause.WriteString("ANY($" + strconv.Itoa(len(*queryParams)) + ")")
+				} else {
+					queryClause.WriteString("$" + strconv.Itoa(len(*queryParams)))
+				}
 
 			case queryp.FilterTypeString:
 				switch ft.Op {
@@ -93,14 +95,16 @@ func FilterQuery(fft queryp.FilterFieldTypes, filter queryp.Filter, queryClause 
 					queryClause.WriteString(" ~* ")
 				case queryp.FilterOpNotIRegexp:
 					queryClause.WriteString(" !~* ")
-				case queryp.FilterOpIn:
-					queryClause.WriteString(" && ") // Overlap operator
 				default:
 					return fmt.Errorf("invalid op %s for field %s", ft.Op.String(), field)
 				}
 
 				*queryParams = append(*queryParams, ft.Value)
-				queryClause.WriteString("$" + strconv.Itoa(len(*queryParams)))
+				if _, ok := ft.Value.([]interface{}); ok {
+					queryClause.WriteString("ANY($" + strconv.Itoa(len(*queryParams)) + ")")
+				} else {
+					queryClause.WriteString("$" + strconv.Itoa(len(*queryParams)))
+				}
 
 			case queryp.FilterTypeBool:
 
@@ -109,19 +113,16 @@ func FilterQuery(fft queryp.FilterFieldTypes, filter queryp.Filter, queryClause 
 					queryClause.WriteString(" = ")
 				case queryp.FilterOpNotEquals:
 					queryClause.WriteString(" != ")
-				case queryp.FilterOpIn:
-					queryClause.WriteString(" && ") // Overlap operator
 				default:
 					return fmt.Errorf("invalid op %s for field %s", ft.Op.String(), field)
 				}
 
-				boolVal, err := strconv.ParseBool(queryp.ValueString(ft.Value))
-				if err != nil {
-					return fmt.Errorf("invalid bool value %s for field %s", ft.Value, field)
+				*queryParams = append(*queryParams, ft.Value)
+				if _, ok := ft.Value.([]interface{}); ok {
+					queryClause.WriteString("ANY($" + strconv.Itoa(len(*queryParams)) + ")")
+				} else {
+					queryClause.WriteString("$" + strconv.Itoa(len(*queryParams)))
 				}
-
-				*queryParams = append(*queryParams, boolVal)
-				queryClause.WriteString("$" + strconv.Itoa(len(*queryParams)))
 
 			default:
 				return fmt.Errorf("invalid filter type for field %s", field)

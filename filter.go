@@ -19,9 +19,6 @@ type FilterTerm struct {
 
 // String converts FilterTerm into it's string representation
 func (ft FilterTerm) String() string {
-	if ft.Op == FilterOpIn {
-		return SafeField(ft.Field) + ft.Op.String() + ValueString(ft.Value) + FilterOpInEnd
-	}
 	return SafeField(ft.Field) + ft.Op.String() + ValueString(ft.Value)
 }
 
