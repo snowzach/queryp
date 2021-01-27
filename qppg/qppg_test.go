@@ -10,7 +10,7 @@ import (
 
 func TestQueryParser(t *testing.T) {
 
-	q, err := queryp.ParseQuery(`field=value&((another=<value|yet=another1|limit=weee))|bob=(a,"\"b",null,"null")|third=value&limit=10&option=beans&sort=test3,-another`)
+	q, err := queryp.ParseQuery(`field=value&((another=<value|yet=another1|limit=weee))|bob=(a,"\"b",null,"null")|third=value&bitset@3&bitclear@~1&limit=10&option=beans&sort=test3,-another`)
 	assert.Nil(t, err)
 	assert.Equal(t, int64(10), q.Limit)
 	assert.Equal(t, int64(0), q.Offset)
@@ -29,6 +29,8 @@ func TestQueryParser(t *testing.T) {
 		"thing.id":          queryp.FilterTypeString,
 		"thing.name":        queryp.FilterTypeString,
 		"thing.description": queryp.FilterTypeString,
+		"bitset":            queryp.FilterTypeNumeric,
+		"bitclear":          queryp.FilterTypeNumeric,
 	}
 
 	sortFields := queryp.SortFields{
@@ -44,7 +46,7 @@ func TestQueryParser(t *testing.T) {
 	err = SortQuery(sortFields, q.Sort, &queryClause, &queryParams)
 	assert.Nil(t, err)
 
-	assert.Equal(t, "field = $1 AND ((another <= $2 OR yet = $3 OR limit = $4)) OR bob && $5 OR whoathird = $6 ORDER BY test7, another DESC", queryClause.String())
-	assert.Equal(t, []interface{}([]interface{}{"value", "value", "another1", "weee", []interface{}{"a", "\"b", nil, "null"}, "value"}), queryParams)
+	assert.Equal(t, "field = $1 AND ((another <= $2 OR yet = $3 OR limit = $4)) OR bob = ANY($5) OR whoathird = $6 AND bitset & $7 = $7 AND bitclear & $8 = 0 ORDER BY test7, another DESC", queryClause.String())
+	assert.Equal(t, []interface{}([]interface{}{"value", "value", "another1", "weee", []interface{}{"a", "\"b", nil, "null"}, "value", "3", "1"}), queryParams)
 
 }

@@ -35,7 +35,9 @@ Get all things where field1=value1 AND ( field2=value2 OR field3=value3 ) sort b
 	* :		- Regular Expression Match
 	* !:	- Not Regular Expression Match
 	* :~	- Regular Expression Match (case-insensitive
-	* !:~	- Not Regular Expression Match (case-insensitive
+	* !:~	- Not Regular Expression Match (case-insensitive)
+	* @     - Bits are set (for numeric values)
+	* @~    - Bits are clear (for numeric values)
 
 	* ()	- Parenthesis can be use for precedence.
 

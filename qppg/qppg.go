@@ -1,6 +1,7 @@
 package qppg
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -54,6 +55,11 @@ func FilterQuery(fft queryp.FilterFieldTypes, filter queryp.Filter, queryClause 
 					queryClause.WriteString(" > ")
 				case queryp.FilterOpGreaterThanEqual:
 					queryClause.WriteString(" >= ")
+				case queryp.FilterOpBitsSet, queryp.FilterOpBitsClear:
+					if filterType != queryp.FilterTypeNumeric {
+						return errors.New("bits operators only valid for numeric fields")
+					}
+					queryClause.WriteString(" & ")
 				default:
 					return fmt.Errorf("invalid op %s for field %s", ft.Op.String(), field)
 				}
@@ -63,6 +69,13 @@ func FilterQuery(fft queryp.FilterFieldTypes, filter queryp.Filter, queryClause 
 					queryClause.WriteString("ANY($" + strconv.Itoa(len(*queryParams)) + ")")
 				} else {
 					queryClause.WriteString("$" + strconv.Itoa(len(*queryParams)))
+				}
+
+				switch ft.Op {
+				case queryp.FilterOpBitsSet:
+					queryClause.WriteString(" = $" + strconv.Itoa(len(*queryParams)))
+				case queryp.FilterOpBitsClear:
+					queryClause.WriteString(" = 0")
 				}
 
 			case queryp.FilterTypeString:

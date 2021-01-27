@@ -19,6 +19,8 @@ const (
 	FilterOpNotRegexp        FilterOp = 11
 	FilterOpIRegexp          FilterOp = 12
 	FilterOpNotIRegexp       FilterOp = 13
+	FilterOpBitsSet          FilterOp = 14
+	FilterOpBitsClear        FilterOp = 15
 
 	FilterOpSymEquals      = "="
 	FilterOpSymNotEquals   = "!="
@@ -40,7 +42,10 @@ const (
 	FilterOpSymIRegexp    = ":~"
 	FilterOpSymNotIRegexp = "!:~"
 
-	FieldNeedsQuote = `!=<>~:"`
+	FilterOpSymBitsSet   = "@"
+	FilterOpSymBitsClear = "@~"
+
+	FieldNeedsQuote = `!=<>~:"@`
 )
 
 var (
@@ -61,6 +66,8 @@ var (
 		FilterOpSymNotRegexp:         FilterOpNotRegexp,
 		FilterOpSymIRegexp:           FilterOpIRegexp,
 		FilterOpSymNotIRegexp:        FilterOpNotIRegexp,
+		FilterOpSymBitsSet:           FilterOpBitsSet,
+		FilterOpSymBitsClear:         FilterOpBitsClear,
 	}
 	FilterOpToFilterOpSym = map[FilterOp]string{
 		FilterOpEquals:           FilterOpSymEquals,
@@ -77,6 +84,8 @@ var (
 		FilterOpNotRegexp:        FilterOpSymNotRegexp,
 		FilterOpIRegexp:          FilterOpSymIRegexp,
 		FilterOpNotIRegexp:       FilterOpSymNotIRegexp,
+		FilterOpBitsSet:          FilterOpSymBitsSet,
+		FilterOpBitsClear:        FilterOpSymBitsClear,
 	}
 )
 

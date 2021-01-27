@@ -144,7 +144,7 @@ func ParseQuery(q string) (*QueryParameters, error) {
 							return nil, fmt.Errorf("unexpected end of input at pos %d", pos)
 						}
 						switch q[pos] {
-						case '!', '=', '~', ':', '<', '>':
+						case '!', '=', '~', ':', '<', '>', '@':
 							break fieldLoop
 						default:
 							fieldb.WriteByte(q[pos])
@@ -166,7 +166,7 @@ func ParseQuery(q string) (*QueryParameters, error) {
 						return nil, fmt.Errorf("unexpected end of input at pos %d", pos)
 					}
 					switch q[pos] {
-					case '!', '=', '~', ':', '<', '>':
+					case '!', '=', '~', ':', '<', '>', '@':
 						opb.WriteByte(q[pos])
 					default:
 						break opLoop
@@ -510,7 +510,7 @@ func ValueString(value interface{}) string {
 		for i, v := range s {
 			values[i] = ValueString(v)
 		}
-		return strings.Join(values, ",")
+		return "(" + strings.Join(values, ",") + ")"
 	default:
 		sval = fmt.Sprintf("%v", value)
 	}
