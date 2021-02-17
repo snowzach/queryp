@@ -5,6 +5,9 @@ import "strings"
 type Options map[string]string // Just a lookup of string
 
 func (o Options) Get(option string) string {
+	if o == nil {
+		return ""
+	}
 	if value, found := o[option]; found {
 		return value
 	}
@@ -12,16 +15,20 @@ func (o Options) Get(option string) string {
 }
 
 func (o Options) Has(option string) bool {
+	if o == nil {
+		return false
+	}
 	_, found := o[option]
 	return found
 }
 
-func (o Options) Set(option string, value string) Options {
-	if o == nil {
-		o = make(Options)
+func (o *Options) Set(option string, value string) Options {
+	if *o == nil {
+		options := make(Options)
+		o = &options
 	}
-	o[option] = value
-	return o
+	(*o)[option] = value
+	return *o
 }
 
 func (o Options) String() string {
