@@ -1,6 +1,8 @@
 package queryp
 
-import "strings"
+import (
+	"strings"
+)
 
 type Options map[string]string // Just a lookup of string
 
@@ -24,8 +26,7 @@ func (o Options) Has(option string) bool {
 
 func (o *Options) Set(option string, value string) Options {
 	if *o == nil {
-		options := make(Options)
-		o = &options
+		*o = make(Options)
 	}
 	(*o)[option] = value
 	return *o
