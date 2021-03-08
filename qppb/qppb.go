@@ -17,7 +17,7 @@ func QueryParametersPB(qp *queryp.QueryParameters) *QueryParameters {
 
 }
 
-func FilterPB(ftqp []queryp.FilterTerm) []*FilterTerm {
+func FilterPB(ftqp []*queryp.FilterTerm) []*FilterTerm {
 	if len(ftqp) == 0 {
 		return nil
 	}

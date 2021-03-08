@@ -19,7 +19,7 @@ func FilterQP(ftpb []*FilterTerm) queryp.Filter {
 	}
 	f := make(queryp.Filter, 0, len(ftpb))
 	for _, ft := range ftpb {
-		f = append(f, queryp.FilterTerm{
+		f = append(f, &queryp.FilterTerm{
 			Logic:     ft.Logic.FilterLogic(),
 			Field:     ft.Field,
 			Op:        ft.Op.FilterOp(),
@@ -98,7 +98,7 @@ func SortQP(stpb []*SortTerm) queryp.Sort {
 	}
 	s := make(queryp.Sort, 0, len(stpb))
 	for _, st := range stpb {
-		s = append(s, queryp.SortTerm{
+		s = append(s, &queryp.SortTerm{
 			Field: st.Field,
 			Desc:  st.Desc,
 		})

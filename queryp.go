@@ -52,7 +52,7 @@ func ParseQuery(q string) (*QueryParameters, error) {
 	parse = func(depth int) (Filter, error) {
 
 		start := true
-		filter := make([]FilterTerm, 0)
+		filter := make([]*FilterTerm, 0)
 
 		for {
 
@@ -100,7 +100,7 @@ func ParseQuery(q string) (*QueryParameters, error) {
 				}
 				pos++
 				// Append sub-filter
-				filter = append(filter, FilterTerm{
+				filter = append(filter, &FilterTerm{
 					Logic:     logic,
 					SubFilter: subFilter, // Parse, handle redundant parens
 				})
@@ -259,7 +259,7 @@ func ParseQuery(q string) (*QueryParameters, error) {
 						}
 					}
 
-					filter = append(filter, FilterTerm{
+					filter = append(filter, &FilterTerm{
 						Logic: logic,
 						Op:    op,
 						Field: Field(field),
@@ -344,9 +344,9 @@ func ParseQuery(q string) (*QueryParameters, error) {
 						}
 						for _, sortField := range strings.Split(value, ",") {
 							if len(sortField) > 1 && sortField[0] == '-' { // Reverse sort
-								qp.Sort = append(qp.Sort, SortTerm{Field: sortField[1:], Desc: true})
+								qp.Sort = append(qp.Sort, &SortTerm{Field: sortField[1:], Desc: true})
 							} else {
-								qp.Sort = append(qp.Sort, SortTerm{Field: sortField})
+								qp.Sort = append(qp.Sort, &SortTerm{Field: sortField})
 							}
 						}
 						field = "" // mark field parsed
@@ -373,14 +373,14 @@ func ParseQuery(q string) (*QueryParameters, error) {
 				if len(field) > 0 { // field will be empty if it was parsed as an option
 					// Handle an actual nil value
 					if value == NullValue && !valueQuoted {
-						filter = append(filter, FilterTerm{
+						filter = append(filter, &FilterTerm{
 							Logic: logic,
 							Op:    op,
 							Field: Field(field),
 							Value: nil,
 						})
 					} else {
-						filter = append(filter, FilterTerm{
+						filter = append(filter, &FilterTerm{
 							Logic: logic,
 							Op:    op,
 							Field: Field(field),

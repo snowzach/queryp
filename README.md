@@ -1,6 +1,6 @@
 # QueryP
 
-NOTE: This is under development and is not yet officially released. Expect breaking changes for a bit.
+[![GoDoc](https://godoc.org/github.com/snowzach/queryp?status.svg)](https://godoc.org/github.com/snowzach/queryp)
 
 This is a Go library for generating (mostly) database agnostic query parameters with:
 * Filter
@@ -9,7 +9,7 @@ This is a Go library for generating (mostly) database agnostic query parameters 
 
 # Parsing
 The library also supports parsing a string with a specific format into the query parameters. It's most
-useful as a library for parsing GET query parameters.
+useful as a library for parsing GET-like query parameters.
 
 For example: 
 ```

@@ -9,10 +9,12 @@ import (
 func TestFilterAppend(t *testing.T) {
 
 	var qp QueryParameters
-	qp.Filter = append(qp.Filter, FilterTerm{Logic: FilterLogicAnd, Field: "field1", Op: FilterOpEquals, Value: "1"})
-	qp.Options = qp.Options.Set("field", "value")
+	qp.Filter = append(qp.Filter, &FilterTerm{Logic: FilterLogicAnd, Field: "field1", Op: FilterOpEquals, Value: "1"})
+	qp.Filter.Append(FilterLogicAnd, "field2", FilterOpNotEquals, "2")
+	qp.Options.Set("field3", "value3")
+	qp.Options["field4"] = "value4"
 	qp.Limit = 10
 	qp.Offset = 20
-	assert.Equal(t, `field1=1&limit=10&offset=20&option[field]=value`, qp.String())
+	assert.Equal(t, `field1=1&field2!=2&limit=10&offset=20&option[field3]=value3&option[field4]=value4`, qp.String())
 
 }

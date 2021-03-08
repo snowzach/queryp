@@ -24,12 +24,11 @@ func (o Options) Has(option string) bool {
 	return found
 }
 
-func (o *Options) Set(option string, value string) Options {
+func (o *Options) Set(option string, value string) {
 	if *o == nil {
 		*o = make(Options)
 	}
 	(*o)[option] = value
-	return *o
 }
 
 func (o Options) String() string {
