@@ -1,6 +1,7 @@
 package queryp
 
 import (
+	"sort"
 	"strings"
 )
 
@@ -33,23 +34,29 @@ func (o *Options) Set(option string, value string) {
 
 func (o Options) String() string {
 
-	if o == nil {
+	if o == nil || len(o) == 0 {
 		return ""
 	}
 
+	// Sort keys to have consistent order
+	keys := make([]string, 0, len(o))
+	for key := range o {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+
 	var sb strings.Builder
-	var join bool
-	for k, v := range o {
-		if join {
+	for i, key := range keys {
+		if i > 0 {
 			sb.WriteString("&")
 		}
-		if v == "true" {
-			sb.WriteString("option=" + k)
+		value := o[key]
+		if value == "true" {
+			sb.WriteString("option=" + key)
 		} else {
-			sb.WriteString("option[" + k + "]=" + v)
+			sb.WriteString("option[" + key + "]=" + value)
 		}
-		join = true
 	}
-
 	return sb.String()
+
 }

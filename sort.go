@@ -9,12 +9,12 @@ type SortTerm struct {
 }
 
 // Convienience function for appending to a filter
-func (s *Sort) Append(field Field, desc bool) {
+func (s *Sort) Append(field Field, desc bool) *Sort {
 	if *s == nil {
 		*s = make([]*SortTerm, 0)
 	}
 	*s = append(*s, &SortTerm{Field: field, Desc: desc})
-
+	return s
 }
 
 // SortFields is how you specify what fields are available to select for sorting

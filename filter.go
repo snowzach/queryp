@@ -17,18 +17,33 @@ type FilterTerm struct {
 	SubFilter []*FilterTerm `json:"sub_filter,omitempty"`
 }
 
+// Creates a new filter
+func NewFilter() *Filter {
+	filter := make(Filter, 0)
+	return &filter
+}
+
 // String converts FilterTerm into it's string representation
 func (ft FilterTerm) String() string {
 	return SafeField(ft.Field) + ft.Op.String() + ValueString(ft.Value)
 }
 
 // Convienience function for appending to a filter
-func (f *Filter) Append(logic FilterLogic, field Field, op FilterOp, value interface{}) {
+func (f *Filter) Append(logic FilterLogic, field Field, op FilterOp, value interface{}) *Filter {
 	if *f == nil {
 		*f = make([]*FilterTerm, 0)
 	}
 	*f = append(*f, &FilterTerm{Logic: logic, Field: field, Op: op, Value: value})
+	return f
+}
 
+// Convienience function for appending a sub filter
+func (f *Filter) SubFilter(logic FilterLogic, subFilter *Filter) *Filter {
+	if *f == nil {
+		*f = make([]*FilterTerm, 0)
+	}
+	*f = append(*f, &FilterTerm{Logic: logic, SubFilter: *subFilter})
+	return f
 }
 
 // Filter turns it into it's string representations
