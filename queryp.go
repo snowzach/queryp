@@ -319,7 +319,12 @@ func ParseQuery(q string) (*QueryParameters, error) {
 
 				// We will only handle options at depth 0
 				if depth == 0 {
-					switch field {
+					// Match at most 7 character (to allow for matching option field with extended format)
+					maxLen := 7
+					if len(field) < maxLen {
+						maxLen = len(field)
+					}
+					switch field[:maxLen] {
 					case "limit":
 						if op != FilterOpEquals {
 							return nil, fmt.Errorf("invalid operation for limit option")
@@ -350,7 +355,7 @@ func ParseQuery(q string) (*QueryParameters, error) {
 							}
 						}
 						field = "" // mark field parsed
-					case "option":
+					case "option", "option[":
 						if op != FilterOpEquals {
 							return nil, fmt.Errorf("invalid operation for option")
 						}
