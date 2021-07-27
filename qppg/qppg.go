@@ -3,6 +3,7 @@ package qppg
 import (
 	"errors"
 	"fmt"
+	"reflect"
 	"strconv"
 	"strings"
 
@@ -65,7 +66,7 @@ func FilterQuery(fft queryp.FilterFieldTypes, filter queryp.Filter, queryClause 
 				}
 
 				*queryParams = append(*queryParams, ft.Value)
-				if _, ok := ft.Value.([]interface{}); ok {
+				if isSlice(ft.Value) {
 					queryClause.WriteString("ANY($" + strconv.Itoa(len(*queryParams)) + ")")
 				} else {
 					queryClause.WriteString("$" + strconv.Itoa(len(*queryParams)))
@@ -113,7 +114,8 @@ func FilterQuery(fft queryp.FilterFieldTypes, filter queryp.Filter, queryClause 
 				}
 
 				*queryParams = append(*queryParams, ft.Value)
-				if _, ok := ft.Value.([]interface{}); ok {
+
+				if isSlice(ft.Value) {
 					queryClause.WriteString("ANY($" + strconv.Itoa(len(*queryParams)) + ")")
 				} else {
 					queryClause.WriteString("$" + strconv.Itoa(len(*queryParams)))
@@ -131,7 +133,7 @@ func FilterQuery(fft queryp.FilterFieldTypes, filter queryp.Filter, queryClause 
 				}
 
 				*queryParams = append(*queryParams, ft.Value)
-				if _, ok := ft.Value.([]interface{}); ok {
+				if isSlice(ft.Value) {
 					queryClause.WriteString("ANY($" + strconv.Itoa(len(*queryParams)) + ")")
 				} else {
 					queryClause.WriteString("$" + strconv.Itoa(len(*queryParams)))
@@ -195,4 +197,11 @@ func SortQuery(sortFields queryp.SortFields, sort queryp.Sort, queryClause *stri
 	}
 	return nil
 
+}
+
+func isSlice(v interface{}) bool {
+	if kind := reflect.TypeOf(v).Kind(); kind == reflect.Slice || kind == reflect.Array {
+		return true
+	}
+	return false
 }
