@@ -46,6 +46,11 @@ func (f *Filter) SubFilter(logic FilterLogic, subFilter *Filter) *Filter {
 	return f
 }
 
+// Conveinience function for assigning to a qp.Filter
+func (f *Filter) Filter() Filter {
+	return *f
+}
+
 // Filter turns it into it's string representations
 func (f Filter) String() string {
 

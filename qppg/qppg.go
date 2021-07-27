@@ -15,22 +15,37 @@ func FilterQuery(fft queryp.FilterFieldTypes, filter queryp.Filter, queryClause 
 
 	for i, ft := range filter {
 
-		if i > 0 {
-			switch ft.Logic {
-			case queryp.FilterLogicAnd:
-				queryClause.WriteString(" AND ")
-			case queryp.FilterLogicOr:
-				queryClause.WriteString(" OR ")
-			}
-		}
-
+		// If it's a sub-filter
 		if ft.SubFilter != nil {
-			queryClause.WriteString("(")
-			if err := FilterQuery(fft, ft.SubFilter, queryClause, queryParams); err != nil {
-				return err
+			// And it actually has terms (if not, just ignore it)
+			if len(ft.SubFilter) > 0 {
+				// it's not the first term so write AND/OR
+				if i > 0 {
+					switch ft.Logic {
+					case queryp.FilterLogicAnd:
+						queryClause.WriteString(" AND ")
+					case queryp.FilterLogicOr:
+						queryClause.WriteString(" OR ")
+					}
+				}
+
+				queryClause.WriteString("(")
+				if err := FilterQuery(fft, ft.SubFilter, queryClause, queryParams); err != nil {
+					return err
+				}
+				queryClause.WriteString(")")
 			}
-			queryClause.WriteString(")")
 		} else {
+
+			// It's not the first term so write AND/OR
+			if i > 0 {
+				switch ft.Logic {
+				case queryp.FilterLogicAnd:
+					queryClause.WriteString(" AND ")
+				case queryp.FilterLogicOr:
+					queryClause.WriteString(" OR ")
+				}
+			}
 
 			// Lookup the filter
 			field, filterType := fft.FindFilterType(ft.Field)
