@@ -312,9 +312,6 @@ func ParseQuery(q string) (*QueryParameters, error) {
 
 				}
 
-				if valueb.Len() == 0 {
-					return nil, fmt.Errorf("invalid value at pos %d", pos)
-				}
 				value := valueb.String()
 
 				// We will only handle options at depth 0
