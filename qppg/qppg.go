@@ -208,6 +208,14 @@ func SortQuery(sortFields queryp.SortFields, sort queryp.Sort, queryClause *stri
 			if sortTerm.Desc {
 				queryClause.WriteString(" DESC")
 			}
+			switch sortTerm.NullSort {
+			case queryp.NullSortDefault:
+				// PASS
+			case queryp.NullSortFirst:
+				queryClause.WriteString(" NULLS FIRST")
+			case queryp.NullSortLast:
+				queryClause.WriteString(" NULLS LAST")
+			}
 		}
 	}
 	return nil

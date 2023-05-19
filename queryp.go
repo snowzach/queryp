@@ -22,6 +22,7 @@ type QueryParameters struct {
 // Handles parsing query requests with complex matching and precedence
 var (
 	optionParser = regexp.MustCompile("^option\\[(.*)\\]$")
+	sortParser   = regexp.MustCompile("^([-+]?)([-+]?)(.*)$")
 )
 
 func ParseRawQuery(rq string) (*QueryParameters, error) {
@@ -345,11 +346,16 @@ func ParseQuery(q string) (*QueryParameters, error) {
 							return nil, fmt.Errorf("invalid operation for sort option")
 						}
 						for _, sortField := range strings.Split(value, ",") {
-							if len(sortField) > 1 && sortField[0] == '-' { // Reverse sort
-								qp.Sort = append(qp.Sort, &SortTerm{Field: sortField[1:], Desc: true})
-							} else {
-								qp.Sort = append(qp.Sort, &SortTerm{Field: sortField})
+							sortOptions := sortParser.FindStringSubmatch(sortField)
+							sortDesc := sortOptions[1] == "-"
+							nullSort := NullSortDefault
+							switch sortOptions[2] {
+							case "-":
+								nullSort = NullSortFirst
+							case "+":
+								nullSort = NullSortLast
 							}
+							qp.Sort = append(qp.Sort, &SortTerm{Field: sortOptions[3], Desc: sortDesc, NullSort: nullSort})
 						}
 						field = "" // mark field parsed
 					case "option", "option[":
